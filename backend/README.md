@@ -48,33 +48,70 @@ The request body must be a JSON object with the following fields:
     }
     ```
 
-### Error Responses
-- **Status Code**: `400 Bad Request`
-    - **Description**: Validation errors or missing required fields.
+    ## Login Endpoint Documentation
+
+    ## Endpoint
+    `POST /users/login`
+
+    ## Description
+    This endpoint is used to authenticate a user. It requires the user's email and password.
+
+    ## Request Body
+    The request body must be a JSON object with the following fields:
+
+    - `email` (string, required): The user's email address. Must be a valid email format.
+    - `password` (string, required): The user's password. Must be at least 6 characters long.
+
+    ### Example
+    ```json
+    {
+        "email": "john.doe@example.com",
+        "password": "password123"
+    }
+    ```
+
+    ## Response
+
+    ### Success Response
+    - **Status Code**: `200 OK`
     - **Body**:
         ```json
         {
-            "errors": [
-                {
-                    "msg": "Please enter a valid email",
-                    "param": "email",
-                    "location": "body"
+            "user": {
+                "_id": "user_id",
+                "fullName": {
+                    "firstName": "John",
+                    "lastName": "Doe"
                 },
-                {
-                    "msg": "Password must be at least 6 characters long",
-                    "param": "password",
-                    "location": "body"
-                },
-                {
-                    "msg": "First name must be at least 3 characters long",
-                    "param": "fullName.firstName",
-                    "location": "body"
-                }
-            ]
+                "email": "john.doe@example.com",
+                "socketId": null
+            },
+            "token": "jwt_token"
         }
         ```
 
-## Notes
-- Ensure that the email provided is unique and not already registered in the system.
-- Passwords are hashed before being stored in the database for security purposes.
-- A JWT token is generated and returned upon successful registration.
+    ### Error Responses
+    - **Status Code**: `400 Bad Request`
+        - **Description**: Validation errors or missing required fields.
+        - **Body**:
+            ```json
+            {
+                "errors": [
+                    {
+                        "msg": "Please enter a valid email",
+                        "param": "email",
+                        "location": "body"
+                    },
+                    {
+                        "msg": "Password must be at least 6 characters long",
+                        "param": "password",
+                        "location": "body"
+                    }
+                ]
+            }
+            ```
+
+    ## Notes
+    - Ensure that the email provided is registered in the system.
+    - Passwords are verified against the hashed passwords stored in the database.
+    - A JWT token is generated and returned upon successful login.

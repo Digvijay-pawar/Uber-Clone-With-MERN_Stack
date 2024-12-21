@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-
 const userSchema = new mongoose.Schema({
     fullName: {
         firstName: {
@@ -20,12 +19,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        match: [/.+\@.+\..+/, "Please fill a valid email address"] 
+        match: [/.+\@.+\..+/, "Please fill a valid email address"]
     },
     password: {
         type: String,
         required: true,
-        select: true,
+        select: false,
         minlength: [6, "Password must be at least 6 characters long"]
     },
     socketId: {
@@ -33,18 +32,16 @@ const userSchema = new mongoose.Schema({
     }
 });
 
+// Static method to hash passwords
+userSchema.statics.hashPassword = async function(password) {
+    const salt = await bcrypt.genSalt(10);
+    return await bcrypt.hash(password, salt);
+};
+
+// Instance method to generate JWT tokens
 userSchema.statics.generateAuthToken = function() {
-    return jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
-}
-
-userSchema.statics.comparePassword = async function(plainPassword) {
-    return await bcrypt.compare(plainPassword, this.password);
-}
-
-userSchema.statics.hashPassword = async function(password) {    
-    const hashedPassword = await bcrypt.hash(password, 10);
-    return hashedPassword;
-}
+    return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+};
 
 const userModel = mongoose.model("User", userSchema);
 
