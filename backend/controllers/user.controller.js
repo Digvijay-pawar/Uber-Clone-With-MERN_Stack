@@ -1,7 +1,7 @@
 const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
-const bcrypt = require("bcrypt");
+const blacklistTokenModel = require("../models/blacklistToken.model");
 
 module.exports.registerUser = async (req, res, next) => {
     const errors = validationResult(req);
@@ -13,7 +13,7 @@ module.exports.registerUser = async (req, res, next) => {
     const { firstName, lastName } = fullName;
 
     try {
-        const hashedPassword = await userModel.hashPassword(password);
+        const hashedPassword = await userService.hashPassword(password);
 
         const user = await userService.createUser({
             firstName, 
@@ -22,7 +22,7 @@ module.exports.registerUser = async (req, res, next) => {
             password: hashedPassword
         });
 
-        const token = await userModel.generateAuthToken();
+        const token = await userService.generateAuthToken(email);
 
         res.status(201).json({ user, token });
     } catch (error) {
@@ -49,13 +49,15 @@ module.exports.loginUser = async (req, res, next) => {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await userService.comparePasswords(password, user.password);
 
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        const token = userModel.generateAuthToken();
+        const token = await userService.generateAuthToken(user.email);
+
+        res.cookie("token", token);
 
         // Exclude password from the response
         user.password = undefined;
@@ -65,3 +67,17 @@ module.exports.loginUser = async (req, res, next) => {
         next(error);
     }
 };
+
+module.exports.getUserProfile = async (req, res, next) => {
+    res.status(200).json(req.user);
+};
+
+module.exports.logoutUser = async (req, res, next) => {
+    res.clearCookie("token");
+
+    const token = req.cookies.token || req.headers.authorization && req.headers.authorization.split(" ")[1];
+
+    await userService.blacklistToken(token);
+    res.status(200).json({ message: "User logged out successfully" });
+}
+
