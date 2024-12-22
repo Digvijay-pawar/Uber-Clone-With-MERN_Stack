@@ -2,9 +2,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const connect = require("./db/db.connect");
 const userRoutes = require("./routes/user.routes");
-const cookieParser = require("cookie-parser");
+const captainRoutes = require("./routes/captain.routes");
 const app = express();
 
 connect();
@@ -22,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/users", userRoutes);
-
+app.use("/captains", captainRoutes);
 
 
 const PORT = process.env.PORT || 3000;
