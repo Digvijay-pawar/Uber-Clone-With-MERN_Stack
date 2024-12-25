@@ -5,7 +5,7 @@ const validationResult = require('express-validator').validationResult;
 module.exports.registerCaptain = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ message: errors.array() });
     }
 
     const { fullName, email, password, vehicle } = req.body;
@@ -34,7 +34,7 @@ module.exports.registerCaptain = async (req, res, next) => {
 
         res.status(201).json({ token, captain });
     } catch (error) {
-        next(error);
+        res.status(500).json({ message: error.message });
     }
 }
 

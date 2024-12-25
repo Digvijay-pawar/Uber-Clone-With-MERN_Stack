@@ -386,5 +386,3 @@ This endpoint is used to log out a captain. It requires a valid JWT token.
             "message": "Unauthorized"
         }
         ```
-
-

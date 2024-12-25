@@ -5,7 +5,7 @@ const { validationResult } = require("express-validator");
 module.exports.registerUser = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ message: errors.array() });
     }
 
     const { fullName, email, password } = req.body;
@@ -26,18 +26,20 @@ module.exports.registerUser = async (req, res, next) => {
             password: hashedPassword
         });
 
+        user.password = undefined;
+
         const token = await userService.generateAuthToken(email);
 
         res.status(201).json({ token, user });
     } catch (error) {
-        next(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
 module.exports.loginUser = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ message: errors.array() });
     }
 
     const { email, password } = req.body;
@@ -68,7 +70,7 @@ module.exports.loginUser = async (req, res, next) => {
 
         res.status(200).json({ token, user });
     } catch (error) {
-        next(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
